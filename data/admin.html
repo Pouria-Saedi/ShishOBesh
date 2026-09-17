@@ -118,8 +118,19 @@
     font-size:13px;
     color:var(--ink-muted);
   }
+  .github-connect{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .github-connect input{
+    width:190px;
+    background:var(--bg);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font:inherit;
+    font-size:12px;
+    padding:7px 9px;
+    border-radius:2px;
+  }
+  .github-connect input:focus{ outline:none; border-color:var(--brass); }
   .file-banner strong{ color:var(--ink); font-weight:500; }
-  #fileInput{ display:none; }
 
   /* ---------- stat cards ---------- */
   .stat-grid{
@@ -316,11 +327,8 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-ghost btn-small" id="openFileBtn" type="button">Open products.json</button>
-      <button class="btn btn-primary btn-small" id="saveFileBtn" type="button">Save</button>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme"><span class="tt-knob"></span></button>
     </div>
-    <input type="file" id="fileInput" accept="application/json">
   </div>
 </header>
 
@@ -328,7 +336,11 @@
   <div class="wrap">
 
     <div class="file-banner" id="fileBanner">
-      <span>Working on <strong id="fileNameLabel">an unsaved catalog</strong> &mdash; loaded the sample data below to start. Changes are saved automatically after you choose the catalog file.</span>
+      <span>Working on <strong id="fileNameLabel">products.json</strong> &mdash; changes commit automatically to GitHub.</span>
+      <div class="github-connect">
+        <input type="password" id="githubToken" placeholder="GitHub token" aria-label="GitHub token" autocomplete="off">
+        <button class="btn btn-primary btn-small" id="connectGithubBtn" type="button">Connect GitHub</button>
+      </div>
     </div>
 
     <div class="stat-grid" id="statGrid"></div>
@@ -447,8 +459,11 @@
 <script>
 (function(){
   var products = [];
-  var fileHandle = null;
+  var githubToken = '';
+  var githubFileSha = null;
   var editingId = null;
+
+  var GITHUB_API_URL = 'https://api.github.com/repos/Pouria-Saedi/ShishOBesh/contents/data/products.json';
 
   var SAMPLE_PRODUCTS = [
     { id:"urmia-60", name:"The Urmia", materials:"Walnut & walnut root", description:"Persepolis reliefs outside, natural walnut root within. Our best seller.", price:null, currency:"EUR", stock:6, lowStockThreshold:2, category:"Best Seller", image:"../products/urmia-60/assets/urmia-closed-full.webp", url:"../products/urmia-60/urmia-60.html", sku:"SOB-URM-060", active:true },
@@ -484,97 +499,101 @@
     t._timer = setTimeout(function(){ t.classList.remove('show'); }, 3200);
   }
 
-  /* ---------- file handling ---------- */
+  /* ---------- GitHub catalog handling ---------- */
   function loadProducts(list, label){
     products = list;
     document.getElementById('fileNameLabel').textContent = label;
     renderAll();
   }
 
+  function decodeBase64(value){
+    var binary = atob(value.replace(/\s/g, ''));
+    var bytes = new Uint8Array(binary.length);
+    for(var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+
+  function encodeBase64(value){
+    var bytes = new TextEncoder().encode(value);
+    var binary = '';
+    for(var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  async function githubRequest(options){
+    var headers = {
+      'Accept':'application/vnd.github+json',
+      'X-GitHub-Api-Version':'2022-11-28'
+    };
+    if(githubToken) headers.Authorization = 'Bearer ' + githubToken;
+    var response = await fetch(GITHUB_API_URL, { ...options, headers:headers });
+    if(!response.ok){
+      var detail = await response.json().catch(function(){ return {}; });
+      throw new Error(detail.message || ('GitHub request failed (' + response.status + ')'));
+    }
+    return response.json();
+  }
+
   async function tryAutoFetch(){
     try {
-      var res = await fetch('../data/products.json', { cache: 'no-store' });
-      if(!res.ok) throw new Error('not found');
-      var data = await res.json();
-      loadProducts(data, 'products.json (auto-loaded)');
-      showToast('Loaded products.json automatically.');
+      var result = await githubRequest({ method:'GET', cache:'no-store' });
+      githubFileSha = result.sha;
+      loadProducts(JSON.parse(decodeBase64(result.content)), 'products.json on GitHub');
     } catch(e){
-      loadProducts(JSON.parse(JSON.stringify(SAMPLE_PRODUCTS)), 'sample data (not yet saved)');
-    }
-  }
-
-  async function openFile(){
-    if('showOpenFilePicker' in window){
-      try{
-        var handles = await window.showOpenFilePicker({
-          types: [{ description:'JSON', accept:{'application/json':['.json']} }]
-        });
-        fileHandle = handles[0];
-        var file = await fileHandle.getFile();
-        var text = await file.text();
-        loadProducts(JSON.parse(text), fileHandle.name);
-        showToast('Loaded ' + fileHandle.name);
-      } catch(e){ /* user cancelled */ }
-    } else {
-      document.getElementById('fileInput').click();
-    }
-  }
-
-  document.getElementById('fileInput').addEventListener('change', function(e){
-    var file = e.target.files[0];
-    if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(){
-      try{
-        loadProducts(JSON.parse(reader.result), file.name);
-        showToast('Loaded ' + file.name + '. Note: this browser can\u2019t save straight back to that file \u2014 use Save to download the updated version.');
-      } catch(err){
-        showToast('That file didn\u2019t look like valid JSON.');
+      try {
+        var res = await fetch('../data/products.json', { cache: 'no-store' });
+        if(!res.ok) throw new Error('not found');
+        loadProducts(await res.json(), 'products.json (local copy)');
+      } catch(fallbackError){
+        loadProducts(JSON.parse(JSON.stringify(SAMPLE_PRODUCTS)), 'sample data');
+        showToast('Could not load products.json from GitHub.');
       }
-    };
-    reader.readAsText(file);
-  });
-
-  function downloadJson(json){
-    var blob = new Blob([json], { type:'application/json' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url; a.download = 'products.json';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('Downloaded products.json \u2014 replace the old one in your website folder.');
+    }
   }
 
   async function saveFile(){
+    if(!githubToken){
+      showToast('Connect GitHub before making catalog changes.');
+      document.getElementById('githubToken').focus();
+      return false;
+    }
     var json = JSON.stringify(products, null, 2);
-    if(fileHandle){
-      try{
-        var writable = await fileHandle.createWritable();
-        await writable.write(json);
-        await writable.close();
-        showToast('Saved to ' + fileHandle.name);
-        return;
-      } catch(e){ /* fall through */ }
+    try{
+      var result = await githubRequest({
+        method:'PUT',
+        headers:{ 'Content-Type':'application/json' },
+        body:JSON.stringify({
+          message:'Update product catalog',
+          content:encodeBase64(json),
+          sha:githubFileSha,
+          branch:'main'
+        })
+      });
+      githubFileSha = result.content.sha;
+      showToast('Catalog updated on GitHub.');
+      return true;
+    } catch(e){
+      showToast(e.message);
+      return false;
     }
-    if('showSaveFilePicker' in window){
-      try{
-        fileHandle = await window.showSaveFilePicker({
-          suggestedName:'products.json',
-          types: [{ description:'JSON', accept:{'application/json':['.json']} }]
-        });
-        var writable2 = await fileHandle.createWritable();
-        await writable2.write(json);
-        await writable2.close();
-        document.getElementById('fileNameLabel').textContent = fileHandle.name;
-        showToast('Saved to ' + fileHandle.name);
-        return;
-      } catch(e){ /* user cancelled save dialog, fall back below */ }
-    }
-    downloadJson(json);
   }
 
-  document.getElementById('openFileBtn').addEventListener('click', openFile);
-  document.getElementById('saveFileBtn').addEventListener('click', saveFile);
+  document.getElementById('connectGithubBtn').addEventListener('click', async function(){
+    var input = document.getElementById('githubToken');
+    githubToken = input.value.trim();
+    if(!githubToken){ showToast('Enter a GitHub token first.'); return; }
+    try{
+      var result = await githubRequest({ method:'GET', cache:'no-store' });
+      githubFileSha = result.sha;
+      loadProducts(JSON.parse(decodeBase64(result.content)), 'products.json on GitHub');
+      input.value = '';
+      input.placeholder = 'Connected to GitHub';
+      showToast('GitHub connected. Changes will commit automatically.');
+    } catch(e){
+      githubToken = '';
+      showToast('GitHub connection failed: ' + e.message);
+    }
+  });
 
   /* ---------- stock status ---------- */
   function stockStatus(p){
