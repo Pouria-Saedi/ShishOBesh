@@ -30,21 +30,6 @@
     "active": true
   },
   {
-    "id": "rosewood-traveler",
-    "name": "The Rosewood Traveler",
-    "materials": "Rosewood & boxwood",
-    "description": "A folding case built for the desk, the study, or the cabin — carved just as deep as the Standard.",
-    "price": 1000,
-    "currency": "EUR",
-    "stock": 3,
-    "lowStockThreshold": 2,
-    "category": "Traveler",
-    "sku": "SOB-ROS-001",
-    "image": "",
-    "url": "",
-    "active": true
-  },
-  {
     "id": "achaemenid-70",
     "name": "The Achaemenid 70",
     "materials": "Sanjed burl & blue resin",
