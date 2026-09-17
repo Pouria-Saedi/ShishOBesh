@@ -15,21 +15,6 @@
     "active": true
   },
   {
-    "id": "walnut-standard",
-    "name": "The Walnut Standard",
-    "materials": "Walnut & maple inlay",
-    "description": "Our founding board. Full-size, hand-carved points, brass hardware.",
-    "price": 1450,
-    "currency": "EUR",
-    "stock": 4,
-    "lowStockThreshold": 2,
-    "category": "Standard",
-    "image": "",
-    "url": "",
-    "sku": "SOB-WAL-001",
-    "active": true
-  },
-  {
     "id": "achaemenid-70",
     "name": "The Achaemenid 70",
     "materials": "Sanjed burl & blue resin",
