@@ -73,20 +73,5 @@
     "url": "../products/achaemenid-70/achaemenid-70.html",
     "sku": "SOB-ACH-070",
     "active": true
-  },
-  {
-    "id": "asd",
-    "name": "asd",
-    "materials": "",
-    "description": "",
-    "price": null,
-    "currency": "EUR",
-    "stock": 0,
-    "lowStockThreshold": 2,
-    "category": "",
-    "sku": "",
-    "image": "",
-    "url": "",
-    "active": true
   }
 ]
