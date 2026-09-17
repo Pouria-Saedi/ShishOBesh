@@ -45,21 +45,6 @@
     "active": true
   },
   {
-    "id": "ebony-reserve",
-    "name": "The Ebony Reserve",
-    "materials": "Ebony & sycamore",
-    "description": "Twelve made each year. Heavier wood, slower work, and a number etched into every one.",
-    "price": 4200,
-    "currency": "EUR",
-    "stock": 5,
-    "lowStockThreshold": 2,
-    "category": "Reserve",
-    "image": "",
-    "url": "",
-    "sku": "SOB-EBY-001",
-    "active": true
-  },
-  {
     "id": "achaemenid-70",
     "name": "The Achaemenid 70",
     "materials": "Sanjed burl & blue resin",
