@@ -43,5 +43,20 @@
     "url": "../products/achaemenid-70/achaemenid-70.html",
     "sku": "SOB-ACH-070",
     "active": true
+  },
+  {
+    "id": "the-rosewood-traveler",
+    "name": "The Rosewood Traveler",
+    "materials": "Rosewood & boxwood",
+    "description": "",
+    "price": 100,
+    "currency": "EUR",
+    "stock": 3,
+    "lowStockThreshold": 2,
+    "category": "Traveler",
+    "sku": "SOB-ROS-001",
+    "image": "",
+    "url": "",
+    "active": true
   }
 ]
