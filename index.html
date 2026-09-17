@@ -1269,66 +1269,7 @@
         <p class="eyebrow"><svg viewBox="0 0 10 10" aria-hidden="true"><polygon points="0,10 5,0 10,10" style="fill:var(--brass)"/></svg>The Collection</p>
         <h2>Five boards. One standard.</h2>
       </div>
-      <div class="collection-grid reveal" id="collectionGrid">
-        <div class="piece piece-photo">
-          <a class="piece-photo-link" href="products/urmia-60/urmia-60.html">
-            <img src="products/urmia-60/assets/urmia-closed-full.webp" alt="The Urmia backgammon board" loading="lazy">
-            <div class="piece-body">
-              <h3>The Urmia</h3>
-              <p class="materials">Walnut &amp; walnut root</p>
-              <p class="desc">Persepolis reliefs outside, natural walnut root within. Our best seller.</p>
-            </div>
-          </a>
-          <div class="piece-foot piece-foot-photo">
-            <p class="price">Enquire for pricing</p>
-            <button type="button" class="piece-add" data-add-to-cart data-id="urmia-60" data-name="The Urmia" data-materials="Walnut &amp; walnut root" data-image="products/urmia-60/assets/urmia-closed-full.webp" data-url="products/urmia-60/urmia-60.html">Add to Cart</button>
-          </div>
-        </div>
-        <div class="piece">
-          <svg class="pt-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="2,20 12,4 22,20" fill="none" style="stroke:var(--brass)" stroke-width="1.4"/></svg>
-          <h3>The Walnut Standard</h3>
-          <p class="materials">Walnut &amp; maple inlay</p>
-          <p class="desc">Our founding board. Full-size, hand-carved points, brass hardware.</p>
-          <div class="piece-foot">
-            <p class="price">From €1,450</p>
-            <button type="button" class="piece-add" data-add-to-cart data-id="walnut-standard" data-name="The Walnut Standard" data-materials="Walnut &amp; maple inlay" data-price="1450">Add to Cart</button>
-          </div>
-        </div>
-        <div class="piece">
-          <svg class="pt-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="2,20 12,4 22,20" fill="none" style="stroke:var(--brass)" stroke-width="1.4"/></svg>
-          <h3>The Rosewood Traveler</h3>
-          <p class="materials">Rosewood &amp; boxwood</p>
-          <p class="desc">A folding case built for the desk, the study, or the cabin — carved just as deep as the Standard.</p>
-          <div class="piece-foot">
-            <p class="price">From €1,890</p>
-            <button type="button" class="piece-add" data-add-to-cart data-id="rosewood-traveler" data-name="The Rosewood Traveler" data-materials="Rosewood &amp; boxwood" data-price="1890">Add to Cart</button>
-          </div>
-        </div>
-        <div class="piece">
-          <svg class="pt-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="2,20 12,4 22,20" fill="none" style="stroke:var(--brass)" stroke-width="1.4"/></svg>
-          <h3>The Ebony Reserve</h3>
-          <p class="materials">Ebony &amp; sycamore</p>
-          <p class="desc">Twelve made each year. Heavier wood, slower work, and a number etched into every one.</p>
-          <div class="piece-foot">
-            <p class="price">From €4,200</p>
-            <button type="button" class="piece-add" data-add-to-cart data-id="ebony-reserve" data-name="The Ebony Reserve" data-materials="Ebony &amp; sycamore" data-price="4200">Add to Cart</button>
-          </div>
-        </div>
-        <div class="piece piece-photo">
-          <a class="piece-photo-link" href="products/achaemenid-70/achaemenid-70.html">
-            <img src="products/achaemenid-70/assets/prod-closed-full.webp" alt="The Achaemenid 70 backgammon board" loading="lazy">
-            <div class="piece-body">
-              <h3>The Achaemenid 70</h3>
-              <p class="materials">Sanjed burl &amp; blue resin</p>
-              <p class="desc">Hand-carved Achaemenid reliefs outside, a river of blue resin within. Museum-scale, made to order.</p>
-            </div>
-          </a>
-          <div class="piece-foot piece-foot-photo">
-            <p class="price">Enquire for pricing</p>
-            <button type="button" class="piece-add" data-add-to-cart data-id="achaemenid-70" data-name="The Achaemenid 70" data-materials="Sanjed burl &amp; blue resin" data-image="products/achaemenid-70/assets/prod-closed-full.webp" data-url="products/achaemenid-70/achaemenid-70.html">Add to Cart</button>
-          </div>
-        </div>
-      </div>
+      <div class="collection-grid reveal" id="collectionGrid"></div>
     </div>
   </section>
 
@@ -1510,6 +1451,53 @@
   }
   window.addEventListener('scroll', onScroll, { passive:true });
   onScroll();
+
+  // Load the public catalog so admin changes appear on the storefront.
+  (function(){
+    var grid = document.getElementById('collectionGrid');
+
+    function escapeHtml(value){
+      var div = document.createElement('div');
+      div.textContent = value == null ? '' : String(value);
+      return div.innerHTML;
+    }
+
+    function storefrontPath(value){
+      var path = String(value || '');
+      return path.indexOf('../') === 0 ? path.slice(3) : path;
+    }
+
+    function priceLabel(product){
+      if(typeof product.price !== 'number') return 'Enquire for pricing';
+      var symbol = product.currency === 'USD' ? '$' : (product.currency === 'GBP' ? '\u00a3' : '\u20ac');
+      return 'From ' + symbol + product.price.toLocaleString('en-US');
+    }
+
+    function renderCatalog(products){
+      if(!grid) return;
+      var activeProducts = products.filter(function(product){ return product.active !== false; });
+      grid.innerHTML = activeProducts.map(function(product){
+        var image = storefrontPath(product.image);
+        var url = storefrontPath(product.url);
+        var hasImage = !!image;
+        var isOut = (product.stock || 0) <= 0;
+        var isLow = !isOut && product.lowStockThreshold > 0 && product.stock <= product.lowStockThreshold;
+        var stockNote = isOut ? '<p class="piece-stock-note piece-stock-out">Currently unavailable</p>' : (isLow ? '<p class="piece-stock-note piece-stock-low">Limited availability</p>' : '');
+        var imageMarkup = hasImage ? '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + ' backgammon board" loading="lazy">' : '<svg class="pt-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="2,20 12,4 22,20" fill="none" style="stroke:var(--brass)" stroke-width="1.4"/></svg>';
+        var bodyMarkup = '<h3>' + escapeHtml(product.name) + '</h3><p class="materials">' + escapeHtml(product.materials) + '</p><p class="desc">' + escapeHtml(product.description) + '</p>';
+        var contentMarkup = url && hasImage ? '<a class="piece-photo-link" href="' + escapeHtml(url) + '">' + imageMarkup + '<div class="piece-body">' + bodyMarkup + '</div></a>' : imageMarkup + '<div class="piece-body">' + bodyMarkup + '</div>';
+        var footClass = hasImage ? 'piece-foot piece-foot-photo' : 'piece-foot';
+        return '<div class="piece' + (hasImage ? ' piece-photo' : '') + '">' + contentMarkup + stockNote + '<div class="' + footClass + '"><p class="price">' + priceLabel(product) + '</p><button type="button" class="piece-add" data-add-to-cart data-id="' + escapeHtml(product.id) + '" data-name="' + escapeHtml(product.name) + '" data-materials="' + escapeHtml(product.materials) + '" data-price="' + (typeof product.price === 'number' ? product.price : '') + '" data-image="' + escapeHtml(image) + '" data-url="' + escapeHtml(url) + '"' + (isOut ? ' disabled' : '') + '>Add to Cart</button></div></div>';
+      }).join('');
+    }
+
+    fetch('data/products.json', { cache:'no-store' })
+      .then(function(response){ if(!response.ok) throw new Error('Catalog unavailable'); return response.json(); })
+      .then(renderCatalog)
+      .catch(function(){
+        if(grid) grid.innerHTML = '<p class="section-intro">The collection is temporarily unavailable.</p>';
+      });
+  })();
 
   // reveal on scroll
   var reveals = document.querySelectorAll('.reveal');

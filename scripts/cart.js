@@ -296,17 +296,17 @@
       else closeDrawer();
     });
 
-    document.querySelectorAll('[data-add-to-cart]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        addItem({
-          id: btn.getAttribute('data-id'),
-          name: btn.getAttribute('data-name'),
-          materials: btn.getAttribute('data-materials'),
-          price: btn.getAttribute('data-price') ? parseFloat(btn.getAttribute('data-price')) : null,
-          image: btn.getAttribute('data-image'),
-          url: btn.getAttribute('data-url')
-        }, 1);
-      });
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('[data-add-to-cart]') : null;
+      if (!btn || btn.disabled) return;
+      addItem({
+        id: btn.getAttribute('data-id'),
+        name: btn.getAttribute('data-name'),
+        materials: btn.getAttribute('data-materials'),
+        price: btn.getAttribute('data-price') ? parseFloat(btn.getAttribute('data-price')) : null,
+        image: btn.getAttribute('data-image'),
+        url: btn.getAttribute('data-url')
+      }, 1);
     });
 
     var checkoutBtn = document.getElementById('cartCheckoutBtn');
