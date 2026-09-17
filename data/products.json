@@ -34,29 +34,14 @@
     "name": "The Rosewood Traveler",
     "materials": "Rosewood & boxwood",
     "description": "A folding case built for the desk, the study, or the cabin — carved just as deep as the Standard.",
-    "price": 1890,
+    "price": 1000,
     "currency": "EUR",
     "stock": 3,
     "lowStockThreshold": 2,
     "category": "Traveler",
-    "image": "",
-    "url": "",
     "sku": "SOB-ROS-001",
-    "active": true
-  },
-  {
-    "id": "ebony-reserve",
-    "name": "The Ebony Reserve",
-    "materials": "Ebony & sycamore",
-    "description": "Twelve made each year. Heavier wood, slower work, and a number etched into every one.",
-    "price": 4200,
-    "currency": "EUR",
-    "stock": 5,
-    "lowStockThreshold": 2,
-    "category": "Reserve",
     "image": "",
     "url": "",
-    "sku": "SOB-EBY-001",
     "active": true
   },
   {
@@ -72,21 +57,6 @@
     "image": "../products/achaemenid-70/assets/prod-closed-full.webp",
     "url": "../products/achaemenid-70/achaemenid-70.html",
     "sku": "SOB-ACH-070",
-    "active": true
-  },
-  {
-    "id": "asd",
-    "name": "asd",
-    "materials": "",
-    "description": "",
-    "price": null,
-    "currency": "EUR",
-    "stock": 0,
-    "lowStockThreshold": 2,
-    "category": "",
-    "sku": "",
-    "image": "",
-    "url": "",
     "active": true
   }
 ]
